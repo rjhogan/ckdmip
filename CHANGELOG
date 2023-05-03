@@ -1,6 +1,7 @@
-version 1.1
+version 1.1 (8 Sept 2022)
 	- Added do_write_spectral_boundary_fluxes to ckdmip_lw
 	- Fixed bug in n-stream longwave solver in upwelling
+	- First git version
 
 version 1.0 (1 June 2021)
 	- Added do_write_direct_only, do_write_spectral_boundary_fluxes
