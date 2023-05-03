@@ -1,0 +1,3 @@
+The make_ckdmip_summary.sh is used to create the summary PDFs for a
+particular CKD model in the style of that used to present the ecCKD
+results on the CKDMIP web site.

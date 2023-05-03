@@ -1,0 +1,20 @@
+SOFTWARE
+
+ - Adapts format according to file name (nc|h5)
+ * Merge files can be combined with single-gas files
+ - Checks spectral res compatibility
+ - Check Rayleigh scattering 
+
+BUGS
+
+ - ckdmip_sw --merge-only produces corrupted file
+
+FILE NAME
+
+ckdmip_<dataset>_<band>_<type>_<gas>_<scenario>[_columns].[h5|nc]
+
+dataset = evaluation1|evaluation2|mmm|idealized
+band = sw|lw
+type = spectra|concentrations|fluxes
+gas = h2o|o3|n2|o2|co2|ch4|n2o|cfc11|cfc12
+scenario = present|present-equivalent|median|minimum|maximum|constant|constant-equivalent|constant-[a-l]

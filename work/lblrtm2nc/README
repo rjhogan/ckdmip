@@ -1,0 +1,4 @@
+These scripts were used at ECMWF to (1) make symbolic links to the raw
+LBLRTM files in order that the filenames were more predictable, and
+(2) run lblrtm2nc on the LBLRTM files to produce netCDF files.
+

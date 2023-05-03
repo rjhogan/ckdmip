@@ -1,0 +1,29 @@
+version 1.1
+	- Added do_write_spectral_boundary_fluxes to ckdmip_lw
+	- Fixed bug in n-stream longwave solver in upwelling
+
+version 1.0 (1 June 2021)
+	- Added do_write_direct_only, do_write_spectral_boundary_fluxes
+	  and i_spectral_level_index to ckdmip_sw
+	- ckdmip_tool can produce cloud spectra with the --cloud,
+	  --delta-cloud and --absorption-cloud options
+
+version 0.9 (5 March 2020)
+	*** DATASET CHANGES
+	- 12 scenarios to test longwave overlap of CO2, CH4 and N2O
+	- Individual concentration files for each scenario
+	- Shortwave datasets MMM, Idealized and Evaluation-1
+
+	*** PROTOCOL ADDITIONS/CHANGES
+	- Shortwave file format defined
+	- Reference TSI is now 1361 not 1360.5 W m-2
+	- Longwave standard is 4 angles, rather than 1
+	- Shortwave calculations performed at mu0 = 0.1, 0.3, 0.5, 0.7 and 0.9
+
+	*** CODE CHANGES
+	- ckdmip_convert can convert optical depth to molar/mass extinction coefft
+	- ckdmip_lw can now do up to 8 angles per hemisphere (16 streams)
+	- ckdmip_sw does multiple solar zenith angles
+
+version 0.7
+	- Created CHANGELOG file

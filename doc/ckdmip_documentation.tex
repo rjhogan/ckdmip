@@ -1,0 +1,940 @@
+\documentclass[twoside]{article}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue]{hyperref}
+\usepackage{natbib}
+\usepackage{times}
+\usepackage{listings}
+\usepackage[table]{xcolor}
+\usepackage{color}
+\usepackage{marginnote}
+\usepackage{rotating}
+\usepackage{lipsum}
+\usepackage{longtable}
+\usepackage{array}
+\newcolumntype{L}{>{\raggedright\arraybackslash\hangindent=1em}}
+\newcolumntype{M}{>{\raggedright\arraybackslash\hangindent=1em\ttfamily}}
+\newcolumntype{X}{>{\nullfont}c}
+\def\tablesetup{\rowcolors{2}{light-gray}{light-gray}\footnotesize}
+% Use proper underscore character
+\chardef\_=`\_
+% Set math in Times Roman
+\DeclareSymbolFont{letters}{OML}{ptmcm}{m}{it}
+\DeclareSymbolFont{operators}{OT1}{ptmcm}{m}{n}
+%\DeclareSymbolFont{bold}     {OML}{ptmcm}{b}{it}
+\DeclareMathAlphabet{\mathbf}{OT1}{ptm}{b}{n}
+% Page set up
+\setlength{\oddsidemargin}{0cm} %{0.5cm}
+\setlength{\evensidemargin}{0cm} %{0.5cm}
+\setlength{\topmargin}{-2cm}
+\setlength{\textheight}{24cm}
+\setlength{\textwidth}{16cm}
+\setlength{\marginparsep}{0.5cm}
+\setlength{\marginparwidth}{0cm}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0cm}
+\renewcommand{\baselinestretch}{1.1}
+\sloppy
+
+% Configure appearance of code listings
+\definecolor{light-gray}{gray}{0.92}
+\def\codesize{\small}
+\def\codetabsize{\footnotesize}
+\lstset{language=Fortran,
+  backgroundcolor=\color{light-gray},
+  basicstyle=\footnotesize\ttfamily,
+  numbersep=5pt,
+  xleftmargin=0cm,
+  xrightmargin=0cm,
+  emph={true,false,include,to},
+  emphstyle=\relax}
+\lstset{showstringspaces=false}
+
+% Page headers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+\renewcommand{\subsectionmark}[1]{}
+\fancyhead[RO,RE]{\thepage}
+\fancyfoot[C]{}
+
+% Symbols and macros
+\def\code#1{{\codesize\texttt{#1}}}
+\def\codetab#1{{\codetabsize\texttt{#1}}}
+\def\codeemph#1{{\codesize\texttt{\textbf{#1}}}}
+\def\codetabemph#1{{\codetabsize\texttt{\textbf{#1}}}}
+\def\textemph#1{\textbf{#1}}
+\def\citem#1{\item[{\codesize\texttt{#1}}]}
+\def\codestyle#1{\texttt{#1}}
+\renewcommand\thefootnote{\relax}
+\reversemarginpar
+
+% Title material
+\title{CKDMIP: Technical Guide}
+
+\author{Robin J. Hogan\\ \emph{European Centre for Medium Range
+    Weather Forecasts, Reading, UK}}
+
+\date{\normalsize Document version 1.0 (1 June 2021) applicable to CKDMIP
+  software version 1.0\thanks{This document is copyright
+    \copyright\ European Centre for Medium Range Weather Forecasts
+    2019-2021. If you have any queries about CKDMIP that are not answered
+    by this document, or by \cite{Hogan+2020}, or by the information
+    on the CKDMIP home page, then please email me at
+    \href{mailto:r.j.hogan@ecmwf.int}{\texttt{r.j.hogan@ecmwf.int}}.}\\
+  CKDMIP home page: \url{https://confluence.ecmwf.int/display/CKDMIP}}
+\begin{document}
+\maketitle
+
+%\tableofcontents
+\def\thefootnote{\fnsymbol{footnote}}
+\section{Introduction}
+The motivation and overall structure of the Correlated K-Distribution
+Model Intercomparison Project (CKDMIP) is described in detail by
+\cite{Hogan+2020}.  This document describes the CKDMIP datasets
+(section \ref{sec:datasets}), software (section \ref{sec:software})
+and what files should be provided by project participants (section
+\ref{sec:requirements}).
+
+\section{Datasets}
+\label{sec:datasets}
+The CKDMIP datasets are available at \url{ftp://dissemination.ecmwf.int},
+username \code{ckdmip}, password available on request from Robin Hogan
+(\href{mailto:r.j.hogan@ecmwf.int}{\texttt{r.j.hogan@ecmwf.int}}).
+Some of the smaller files are also available for direct download from
+the CKDMIP home page.
+
+All files are in NetCDF format.  The smaller files use the NetCDF3
+`classic' format (suffix \code{nc}), which is compatible with a wider
+range of software.  The larger files use NetCDF4 format, which is
+actually HDF5 on disk (suffix \code{h5}), but can be accessed using
+the same NetCDF function calls provided that your software is compiled
+against version 4 of the NetCDF library. The latter format is required
+because of its support for very large files and per-variable
+compression.
+
+Table 3 of \cite{Hogan+2020} describes the four dataset groups
+provided in CKDMIP.  The first two, `Evaluation-1' and `Evaluation-2'
+each contain 50 realistic atmospheric profiles, with the first
+intended to be used for training and evaluation of CKD models, and the
+second for independent evaluation. At the time of writing,
+`Evaluation-2' has not been released. A further two, `MMM' and
+`Idealized', provide additional profiles that may be useful to some
+participants for generating CKD models.
+
+\subsection{Gas concentrations}
+\label{sec:conc}
+The following files in the directory \code{concentrations} on the FTP
+site:
+\begin{verbatim}
+ckdmip_evaluation1_concentrations.nc
+ckdmip_mmm_concentrations.nc
+ckdmip_idealized_concentrations.nc
+\end{verbatim}
+contain the mole fractions (in units of mol~mol$^{-1}$, equivalent to
+volume mixing ratio in m$^3$~m$^{-3}$) for the nine gases considered
+in CKDMIP: H$_2$O, O$_3$, N$_2$, O$_2$, CO$_2$, CH$_4$, N$_2$O, CFC11
+and CFC12.  They are provided on both on `full levels'
+(i.e.\ layer-averaged values) and `half levels' (the interfaces
+between layers).  If a gas is `well mixed', either having a constant
+mole fraction with height or varying as a prescribed function of
+pressure, then the mole fraction variables also have a
+\code{reference\_surface\_value} attribute containing the nominal
+surface value. This then enables the software described in section
+\ref{sec:software} to scale the spectral optical depths to correspond
+to a different concentration. The files also contain the temperature
+and pressure on full and half levels.
+
+Note that half-level quantities are the primary variables: these are
+the ones used by the Line-By-Line Radiative Transfer Model
+\cite[LBLRTM;][]{Clough+2005}, and the full-level quantities were
+derived from the half-level quantities: for pressure by taking the
+average of the two enclosing half-level values, and for temperature
+and mole fraction by performing a pressure-weighted average assuming a
+linear variation with pressure within the layer.
+
+As described by \cite{Hogan+2020}, the `Evaluation-1' dataset contains
+50 realistic profiles (the \code{column} dimension is 50) of
+temperature, H$_2$O and O$_3$ extracted from the ECMWF model, along
+with present-day (i.e.\ the year 2020) profiles for the other gases
+that are either constant with pressure (for N$_2$ and O$_2$) or vary
+as a prescribed function of pressure.
+
+The \code{column} dimension of the `MMM' dataset is 3, with these
+profiles containing the median, minimum and maximum temperatures from
+the original ECMWF dataset. For seven of the nine gases, a single
+concentration profile is provided for each column (on both full and
+half levels), which is in fact constant with column and corresponds to
+present-day conditions.  But for H$_2$O and O$_3$, six variables
+are provided for each gas: for H$_2$O we have
+\code{h2o\_median\_mole\_fraction\_hl},
+\code{h2o\_minimum\_mole\_fraction\_hl} and
+\code{h2o\_maximum\_mole\_fraction\_hl}, corresponding to the
+median, minimum and maximum concentrations of the original ECMWF
+dataset, on half levels. The `maximum' concentrations have been capped
+at liquid water saturation.  Each has values for the three columns
+(corresponding to varying temperature).  The corresponding three
+full-level variables have the suffix \code{fl}, and similarly for
+O$_3$.
+
+The `Idealized' dataset contains 6 columns corresponding to
+temperatures 20-K apart. All of the mole-fraction variables are
+constant with pressure and temperature. Since the molar absorption of
+water vapour is dependent on temperature, for this gas alone 12
+separate concentration profiles are provided (named
+\code{h2o\_a\_mole\_fraction\_hl} to
+\code{h2o\_l\_mole\_fraction\_hl}).
+
+To assist CKDMIP participants implementing the 34 well-mixed
+greenhouse-gas scenarios given in Table 2 of \cite{Hogan+2020}, the
+\code{concentrations} directory on the FTP site also contains files
+with the gas concentrations for each individual scenario:
+\begin{verbatim}
+ckdmip_evaluation1_concentrations_glacialmax.nc
+ckdmip_evaluation1_concentrations_preindustrial.nc
+ckdmip_evaluation1_concentrations_present.nc
+ckdmip_evaluation1_concentrations_future.nc
+ckdmip_evaluation1_concentrations_co2-180.nc
+ckdmip_evaluation1_concentrations_co2-280.nc
+ckdmip_evaluation1_concentrations_co2-560.nc
+ckdmip_evaluation1_concentrations_co2-1120.nc
+ckdmip_evaluation1_concentrations_co2-2240.nc
+ckdmip_evaluation1_concentrations_ch4-350.nc
+ckdmip_evaluation1_concentrations_ch4-700.nc
+ckdmip_evaluation1_concentrations_ch4-1200.nc
+ckdmip_evaluation1_concentrations_ch4-2600.nc
+ckdmip_evaluation1_concentrations_ch4-3500.nc
+ckdmip_evaluation1_concentrations_n2o-190.nc
+ckdmip_evaluation1_concentrations_n2o-270.nc
+ckdmip_evaluation1_concentrations_n2o-405.nc
+ckdmip_evaluation1_concentrations_n2o-540.nc
+ckdmip_evaluation1_concentrations_cfc11-0.nc
+ckdmip_evaluation1_concentrations_cfc11-2000.nc
+ckdmip_evaluation1_concentrations_cfc12-0.nc
+ckdmip_evaluation1_concentrations_cfc12-550.nc
+ckdmip_evaluation1_concentrations_co2-180-ch4-350.nc
+ckdmip_evaluation1_concentrations_co2-2240-ch4-350.nc
+ckdmip_evaluation1_concentrations_co2-180-ch4-3500.nc
+ckdmip_evaluation1_concentrations_co2-2240-ch4-3500.nc
+ckdmip_evaluation1_concentrations_co2-180-n2o-190.nc
+ckdmip_evaluation1_concentrations_co2-2240-n2o-190.nc
+ckdmip_evaluation1_concentrations_co2-180-n2o-540.nc
+ckdmip_evaluation1_concentrations_co2-2240-n2o-540.nc
+ckdmip_evaluation1_concentrations_ch4-350-n2o-190.nc
+ckdmip_evaluation1_concentrations_ch4-3500-n2o-190.nc
+ckdmip_evaluation1_concentrations_ch4-350-n2o-540.nc
+ckdmip_evaluation1_concentrations_ch4-3500-n2o-540.nc
+\end{verbatim}
+These files differ from \code{ckdmip\_evaluation1\_concentrations.nc}
+only in the concentration of the five well-mixed greenhouse gases (and
+in fact \code{ckdmip\_evaluation1\_concentrations\_present.nc} is
+identical to \code{ckdmip\_evaluation1\_concentrations.nc}).
+
+\subsection{Absorption spectra}
+\label{sec:spectra}
+For each mole-fraction variable in the concentration files described
+in section \ref{sec:conc}, LBLRTM has been used to compute a profile
+of the spectral optical depth for that one gas.  To keep the size of
+individual files less than around 10 GB, the 50 profiles of the
+`Evaluation-1' dataset (in the \code{lw\_spectra/evaluation1} and
+\code{sw\_spectra/evaluation1} directories on the FTP site) have been
+split into five groups of 10, with the first group having file names
+as follows:
+\begin{verbatim}
+ckdmip_evaluation1_lw_spectra_h2o_present_1-10.h5
+ckdmip_evaluation1_lw_spectra_o3_present_1-10.h5
+ckdmip_evaluation1_lw_spectra_n2_constant_1-10.h5
+ckdmip_evaluation1_lw_spectra_o2_constant_1-10.h5
+ckdmip_evaluation1_lw_spectra_co2_present_1-10.h5
+ckdmip_evaluation1_lw_spectra_ch4_present_1-10.h5
+ckdmip_evaluation1_lw_spectra_n2o_present_1-10.h5
+ckdmip_evaluation1_lw_spectra_cfc11_present-equivalent_1-10.h5
+ckdmip_evaluation1_lw_spectra_cfc12_present_1-10.h5
+\end{verbatim}
+and similarly in the shortwave.  The 45 longwave files amount to
+around 228 GB of data in total, and the shortwave to around 112 GB.
+NetCDF4/HDF5 compression has been used, with the result that the gases
+with the most spectral features have the largest file sizes. In the
+file names, \code{constant} indicates a profile whose mole fraction is
+constant with pressure, \code{present} indicates a present-day
+profile, and \code{present-equivalent} indicates that the
+concentration of CFC11 has been increased to approximately represent
+the radiative forcing of 38 more minor greenhouse gases
+\cite[]{Hogan+2020}.
+
+Each file contains the pressure, temperature and mole fraction on full
+and half levels, for the 10 profiles, which have basically been copied
+from the corresponding concentration file described in section
+\ref{sec:conc}.  In the longwave files, the \code{wavenumber} variable
+defines 7211999 wavenumbers in units of cm$^{-1}$, with spacings of
+0.0002, 0.001 and 0.005~cm$^{-1}$ in the spectral ranges
+0--1300~cm$^{-1}$, 1300--1700~cm$^{-1}$ and 1700-3260~cm$^{-1}$.  In
+the shortwave files there are 3126494 wavenumbers with a spacing of
+0.002, 0.001, 0.002, 0.02 and 1~cm$^{-1}$ in the spectral ranges
+250--2200, 2200-2400, 2400-5150, 5150--16000 and
+16000-50000~cm$^{-1}$.
+
+The \code{optical\_depth} variable then provides the optical depth of
+each atmospheric layer at each wavenumber.  Section \ref{sec:convert}
+describes a tool for converting to mass extinction coefficient or
+molar extinction coefficient.
+
+The directories \code{lw\_spectra/mmm} and \code{sw\_spectra/mm}
+contain the absorption spectra for the `MMM' dataset, with separate
+files for the three different concentration scenarios of H$_2$O and
+O$_3$:
+\begin{verbatim}
+ckdmip_mmm_lw_spectra_h2o_median.h5
+ckdmip_mmm_lw_spectra_h2o_minimum.h5
+ckdmip_mmm_lw_spectra_h2o_maximum.h5
+ckdmip_mmm_lw_spectra_o3_median.h5
+ckdmip_mmm_lw_spectra_o3_minimum.h5
+ckdmip_mmm_lw_spectra_o3_maximum.h5
+ckdmip_mmm_lw_spectra_n2_constant.h5
+ckdmip_mmm_lw_spectra_o2_constant.h5
+ckdmip_mmm_lw_spectra_co2_present.h5
+ckdmip_mmm_lw_spectra_ch4_present.h5
+ckdmip_mmm_lw_spectra_n2o_present.h5
+ckdmip_mmm_lw_spectra_cfc11_present-equivalent.h5
+ckdmip_mmm_lw_spectra_cfc12_present.h5
+\end{verbatim}
+and similarly in the shortwave. The total volume is around 25~GB in
+the longwave and 12~GB in the shortwave.
+
+The directories \code{lw\_spectra/idealized} and
+\code{sw\_spectra/idealized} contain the absorption spectra for the
+`Idealized' dataset, with separate files for the 12 different
+concentrations of H$_2$O:
+\begin{verbatim}
+ckdmip_idealized_lw_spectra_h2o_constant-a.h5
+ckdmip_idealized_lw_spectra_h2o_constant-b.h5
+ckdmip_idealized_lw_spectra_h2o_constant-c.h5
+ckdmip_idealized_lw_spectra_h2o_constant-d.h5
+ckdmip_idealized_lw_spectra_h2o_constant-e.h5
+ckdmip_idealized_lw_spectra_h2o_constant-f.h5
+ckdmip_idealized_lw_spectra_h2o_constant-g.h5
+ckdmip_idealized_lw_spectra_h2o_constant-h.h5
+ckdmip_idealized_lw_spectra_h2o_constant-i.h5
+ckdmip_idealized_lw_spectra_h2o_constant-j.h5
+ckdmip_idealized_lw_spectra_h2o_constant-k.h5
+ckdmip_idealized_lw_spectra_h2o_constant-l.h5
+ckdmip_idealized_lw_spectra_o3_constant.h5
+ckdmip_idealized_lw_spectra_n2_constant.h5
+ckdmip_idealized_lw_spectra_o2_constant.h5
+ckdmip_idealized_lw_spectra_co2_constant.h5
+ckdmip_idealized_lw_spectra_ch4_constant.h5
+ckdmip_idealized_lw_spectra_n2o_constant.h5
+ckdmip_idealized_lw_spectra_cfc11_constant-equivalent.h5
+ckdmip_idealized_lw_spectra_cfc12_constant.h5
+\end{verbatim}
+and similarly in the shortwave. The total volume is around 75~GB in
+the longwave and 43~GB in the longwave.
+
+\subsection{Reference broadband fluxes}
+\label{sec:fluxes}
+Section \ref{sec:software} describes how the CKDMIP software can be
+used to perform line-by-line radiative transfer calculations on the
+absorption spectra described in section \ref{sec:spectra} to generate
+reference fluxes (both spectral and broadband) against which to test
+CKD models. Since the code is slow to run,
+\code{lw\_fluxes/evaluation1} and \code{sw\_fluxes/evaluation1} of the
+FTP contain the broadband upwelling and downwelling fluxes for each of
+the 34 scenarios \cite[see Table 2 of][]{Hogan+2020} applied to the 50
+profiles of the `Evaluation-1 dataset', in the following files:
+%
+\begin{verbatim}
+ckdmip_evaluation1_lw_fluxes_glacialmax.h5
+ckdmip_evaluation1_lw_fluxes_preindustrial.h5
+ckdmip_evaluation1_lw_fluxes_present.h5
+ckdmip_evaluation1_lw_fluxes_future.h5
+ckdmip_evaluation1_lw_fluxes_co2-140.h5
+ckdmip_evaluation1_lw_fluxes_co2-280.h5
+ckdmip_evaluation1_lw_fluxes_co2-560.h5
+ckdmip_evaluation1_lw_fluxes_co2-1120.h5
+ckdmip_evaluation1_lw_fluxes_co2-2240.h5
+ckdmip_evaluation1_lw_fluxes_ch4-350.h5
+ckdmip_evaluation1_lw_fluxes_ch4-700.h5
+ckdmip_evaluation1_lw_fluxes_ch4-1200.h5
+ckdmip_evaluation1_lw_fluxes_ch4-2600.h5
+ckdmip_evaluation1_lw_fluxes_ch4-3500.h5
+ckdmip_evaluation1_lw_fluxes_n2o-190.h5
+ckdmip_evaluation1_lw_fluxes_n2o-270.h5
+ckdmip_evaluation1_lw_fluxes_n2o-405.h5
+ckdmip_evaluation1_lw_fluxes_n2o-540.h5
+ckdmip_evaluation1_lw_fluxes_cfc11-0.h5
+ckdmip_evaluation1_lw_fluxes_cfc11-2000.h5
+ckdmip_evaluation1_lw_fluxes_cfc12-0.h5
+ckdmip_evaluation1_lw_fluxes_cfc12-550.h5
+ckdmip_evaluation1_lw_fluxes_co2-180-ch4-350.h5
+ckdmip_evaluation1_lw_fluxes_co2-180-ch4-3500.h5
+ckdmip_evaluation1_lw_fluxes_co2-180-n2o-190.h5
+ckdmip_evaluation1_lw_fluxes_co2-180-n2o-540.h5
+ckdmip_evaluation1_lw_fluxes_co2-2240-ch4-350.h5
+ckdmip_evaluation1_lw_fluxes_co2-2240-ch4-3500.h5
+ckdmip_evaluation1_lw_fluxes_co2-2240-n2o-190.h5
+ckdmip_evaluation1_lw_fluxes_co2-2240-n2o-540.h5
+ckdmip_evaluation1_lw_fluxes_ch4-350-n2o-190.h5
+ckdmip_evaluation1_lw_fluxes_ch4-350-n2o-540.h5
+ckdmip_evaluation1_lw_fluxes_ch4-3500-n2o-190.h5
+ckdmip_evaluation1_lw_fluxes_ch4-3500-n2o-540.h5
+\end{verbatim}
+%
+As indicated in the file name, the first four correspond to discrete
+scenarios, the next 18 correspond to perturbations of individual gases
+while keeping the others at present-day conditions (where the numbers
+in the filenames indicate ppmv for CO$_2$, ppbv for CH$_4$ and N$_2$O,
+and pptv for CFC11 and CFC12), and the final 12 correspond to
+perturbations of pairs of gases together. These files also contain
+fluxes (in W~m$^{-2}$) in the 13 `narrow' bands defined in Table 4 of
+\cite{Hogan+2020}. In the shortwave, only the first 18 scenarios are
+used, and the files also contain calculations at five different solar
+zenith angles.
+
+\section{Software}
+\label{sec:software}
+The latest version of the software package, named
+\code{ckdmip-x.y.tar.gz}, may be obtained from the CKDMIP home page,
+and contains the \code{ckdmip\_tool}, \code{ckdmip\_lw} and
+\code{ckdmip\_sw} programs.  They are coded in Fortran and it have
+been tested under Linux. Instructions on compiling are provided in the
+\code{README} file within.  The \code{ckdmip\_tool} program performs
+various tasks described in section \ref{sec:tool}, such as creating
+Rayleigh-scattering and cloud spectral files, and creating solar
+spectral irradiance files. The \code{ckdmip\_lw} program can be used
+in three ways: to produce reference line-by-line fluxes (section
+\ref{sec:lbl}), to merge and store the absorption spectra of
+individual gases (section \ref{sec:merge}), or to produce fluxes for
+CKD models (section \ref{sec:ckd}).
+
+\subsection{Utility for creating input files}
+\label{sec:tool}
+The \code{ckdmip\_tool} program performs various tasks according to
+the command-line arguments; typically it generates a file at full
+spectral resolution from information at coarser resolution. The
+arguments available to all tasks are as follows:
+%
+\begin{description}
+\citem{~~--grid input.h5} Read pressure and wavenumber from this file:
+output files will use this resolution grid.
+\citem{~~-o|--output output.h5} Write the output to the specified file.
+\citem{~~--scenario str} Add a \code{scenario} global attribute to the
+output file.
+\citem{~~--column-range M N} Only process columns \code{M} to \code{N}.
+\end{description}
+%
+
+To generate the solar spectral irradiance at the spectral resolution
+of the gases, provide one of the gas spectra files to the
+\code{--grid} argument above, and additionally the following
+arguments:
+\begin{description}
+\citem{~~--ssi TSI ssi.h5} Create a high-resolution solar spectral
+irradiance file interpolated from the lower resolution file
+\code{ssi.h5}, with a total solar irradiance of \code{TSI} (in
+W~m$^{-2}$). Note that CKDMIP uses a nominal value of 1361~W~m$^{-2}$.
+\end{description}
+A suitable lower-resolution file to use here is
+\code{data/mean-ssi\_nrl2.nc} in the CKDMIP software package, which
+contains the solar spectral irradiance from \cite{Coddington+2016} in
+units of W~m$^{-2}$~cm (i.e.\ irradiance per unit wavenumber) at up to
+1-nm resolution.  It is linearly interpolated to the spectral
+resolution of the gases. The output spectral irradiance is in units of
+W~m$^{-2}$, and sums to the requested \code{TSI} value. The
+\code{work/sw/make\_ssi.sh} in the CKDMIP software package
+demonstrates the use of this feature.
+
+To generate a file of Rayleigh-scattering optical depth at the same
+spectral resolution as gas absorption, use the following argument:
+\begin{description}
+\citem{~~--rayleigh} Create a Rayleigh scattering spectral file.
+\end{description}
+The \code{work/sw/make\_rayleigh.sh} demonstrates the use of this
+feature.
+
+The following options generate a file containing the high-resolution
+spectral properties (layer optical depth, single-scattering albedo and
+asymmetry factor) of clouds:
+\begin{description}
+\citem{~~--cloud WP RE M N input.nc} Generate a cloud spectral file
+for a cloud with a water path of \code{WP} (kg m$^{-2}$), and
+effective radius of \code{RE} $\mu$m, lying between layers \code{M}
+and \code{N} inclusive, reading cloud properties from input file
+\code{input.nc}.
+%
+\citem{~~--delta-cloud WP RE M N input.nc} As above but also apply
+delta-Eddington scaling.
+%
+\citem{~~--absrption-cloud WP RE M N input.nc} As above but for a
+non-scattering cloud; the absorption optical depth is saved, while the
+single-scattering albedo and asymmetry factor are not.
+delta-Eddington scaling.
+\end{description}
+The \code{data} directory of the package contains suitable input cloud
+optical property files: \code{mie\_liquid-droplets\_scattering.nc} for Mie
+scattering by liquid droplets, and
+\code{baum\_general-habit-mixture\_scattering.nc} for ice particles
+\citep{Baum+2014}.
+
+
+\subsection{Utility for converting input files}
+\label{sec:convert}
+The \code{ckdmip\_convert} program can convert the files described in
+section \ref{sec:spectra}, which contain the optical depth of a
+particular gas in each layer, into files containing either the mass
+extinction coefficient of the gas, $k$ (the extinction cross section
+per unit mass of the gas, in m$^2$~kg$^{-1}$) or the molar extinction
+coefficient of the gas, $\epsilon$ (in m$^2$~mol$^{-1}$). These
+variables are equivalent to the mass- or molar-\emph{absorption}
+coefficient, but the term \emph{extinction} is used in order that the
+same variable name could be used in future for Rayleigh scattering.
+Usage is as follows:
+\begin{verbatim}
+ckdmip_convert [--mass|--molar] input.h5 output.h5
+\end{verbatim}
+where the first argument specifies whether the mass- or
+molar-extinction coefficient will be computed, followed by the input
+and output file names.  One of the following formulas is applied:
+%
+\begin{eqnarray}
+k_i&=&\frac{gM_d\delta_i}{x_i\left(p_{i+1/2}-p_{i-1/2}\right)};\\
+\epsilon_i&=&\frac{gM_d\delta_i}{x_iM_g\left(p_{i+1/2}-p_{i-1/2}\right)},
+\end{eqnarray}
+%
+where index $i$ indicates the values in layer $i$, $\delta_i$ is the
+layer optical depth, $g$ is the acceleration due to gravity,
+$M_d=0.02897$~kg~mol$^{-1}$ is the molar mass of dry air, $M_g$ is the
+molar mass of the gas in question, $x_i$ is the layer-mean mole
+fraction of the gas, and $p_{i+1/2}$ is the pressure of the half level
+between layers $i$ and $i+1$.  All quantities have SI units.
+
+\subsection{Performing reference longwave flux calculations}
+\label{sec:lbl}
+For this application, \code{ckdmip\_lw} takes as input one or more
+absorption-spectra files (see section \ref{sec:spectra}), optionally
+scales them to represent different gas concentrations, and sums the
+layerwise optical depths internally to produce the combined optical
+depth of all relevant gases. It then performs longwave radiative
+transfer calculations and outputs profiles of broadband and,
+optionally, spectral fluxes and fluxes in bands. Note that despite the
+absorption-spectra files containing temerature, pressure and mole
+fraction on both full and half levels, \code{ckdmip\_lw} only reads
+pressure and temperature on half levels and mole fraction on full
+levels. The radiative transfer calculations involve essentially
+applying Eqs.\ 7--12 of \cite{Hogan&2018}. Note that the surface is
+assumed to have an emissivity of 1 and the same temperature as the
+lowest half level of the atmosphere.
+
+The relevant command-line arguments are as follows:
+%
+\begin{description}
+\citem{~~input.h5} Read in spectral optical depths from the specified
+file and add them to the optical depth of the gas mixture. Note that
+this can either be a file for a single gas, or the file containing a
+merge of several gases (see section \ref{sec:merge}).
+%
+\citem{~~--scale X input.h5} Read the spectral optical depths from the
+specified file, scale them by a factor \code{X}, and add the to the
+optical depth of the gas mixture.
+%
+\citem{~~--conc X input.h5} Read the spectral optical depths and scale
+them by a constant such that the nominal surface mole fraction (in
+mol~mol$^{-1}$) is \code{X}. This is only possible if the file
+contains a \code{reference\_surface\_mole\_fraction} variable
+(i.e.\ all gases except H$_2$O and O$_3$).
+%
+\citem{~~--const X input.h5} Read the spectral optical depths and
+scale them in each layer so that the mole fraction is \code{X} in all
+layers. This is only possible if the file contains a
+\code{reference\_surface\_mole\_fraction} variable.
+%
+\citem{~~-c|--config config.nam} Read extra configuration information
+from the specified namelist file (see below).
+%
+\citem{~~-o|--output output.h5} Write the output to the specified file.
+%
+\citem{~~--scenario str} Add a \code{scenario} global attribute to the
+output file.
+%
+\citem{~~--column-range M N} Only process columns \code{M}
+to \code{N}.
+%
+\end{description}
+%
+Note that multiple input files can be specified. An example of how
+\code{ckdmip\_lw} was used in this way to generate the files described
+in section \ref{sec:fluxes} may be found in the
+\code{work/lw/run\_lw\_lbl\_evaluation.sh} script of the software
+package. Since the 50 profiles of the Evaluation-1 dataset are stored
+in five files for each gas, each containing 10 profiles, this script
+works on 10 profiles at a time, and then uses the NCO utility
+\code{ncrcat} to concatenate the profiles into a single file
+containing the irradiance profiles for all 50 profiles.
+
+If a namelist file is provided then it can be used to set the variable
+names that are read or written, and other aspects of the processing
+and output:
+%
+\begin{verbatim}
+&longwave_config
+pressure_name = "p_hl",           ! Override default, which is "pressure_hl" 
+pressure_scaling = 100.0,         ! Scaling if provided in hPa (default 1)
+temperature_name = "t_hl",        ! Override default, which is "temperature_hl"
+optical_depth_name = "od",        ! Override default, which is "optical_depth"
+planck_name = "planck",           ! Override default, which is "planck_hl"
+wavenumber_name = "wn",           ! Override default, which is "wavenumber"
+nspectralstride = 2,              ! Skip spectral intervals (default 1)
+do_write_spectral_fluxes = false, ! Write spectral fluxes to output (default no)
+do_write_planck = false,          ! Write spectral Planck function (default no)
+do_write_optical_depth = false,   ! Write merged optical depth (default no)
+band_wavenumber1(1:13) = 0, 350, 500, 630, 700, 820, 980, 1080, 1180, &
+  1390, 1480, 1800, 2080,         ! Specify lower wavenumbers of output bands
+band_wavenumber2(1:13) = 350, 500, 630, 700, 820, 980, 1080, 1180, 1390, &
+  1480, 1800, 2080, 3260,         ! Specify upper wavenumbers of output bands
+nangle = 4                        ! Number of angles per hemisphere
+input_planck_per_sterad = true,   ! Default false (Planck function in W m-2)
+iverbose = 3,                     ! Set verbosity level from 1 to 5
+/
+\end{verbatim}
+Here, the \code{band\_wavenumber1} and \code{band\_wavenumber2}
+entries specify that in addition to broadband and (optionally) full
+spectral output, the irradiance profiles should also be provided in
+bands bounded by the wavenumbers in these two vectors (in
+cm$^{-2}$). This is useful to evaluate CKD schemes in individual
+bands.
+
+The \code{nangle} entry specifies the number of angles to use per
+hemisphere in the longwave radiative transfer, with the angles and
+weights selected according to Gauss-Legendre quadrature.  The maximum
+number of angles is 8.  Commonly one refers to an \emph{N-stream
+  scheme} where \emph{N} is twice \code{nangle}.  The default value of
+\code{nangle=0} means to use one angle per hemisphere, but using a
+zenith angle of $\pm$53$^\circ$.  This gives better agreement with the
+higher order approximations than \code{nangle=1}, which uses a zenith
+angle of $\pm$60$^\circ$.
+
+\subsection{Performing reference shortwave flux calculations}
+\label{sec:lbl_sw}
+The executable \code{ckdmip\_sw} works in a similar fashion to
+\code{ckdmip\_lw} but performs shortwave radiation calculations. The
+arguments are essentially the same except that one of the input files
+must be a Rayleigh scattering file produced by \code{ckdmip\_tool} as
+described in section \ref{sec:tool}, and the following additional
+argument must be provided:
+\begin{description}
+\citem{~~--ssi ckdmip\_ssi.h5} Specify the location of a spectral
+solar irradiance file produced using \code{ckdmip\_tool} at the same
+spectral resolution as the gas absorption files.
+\end{description}
+An example may be found in the
+\code{work/sw/run\_sw\_lbl\_evaluation.sh} script. The namelist
+options are similar to the longwave but with the following additions:
+\begin{verbatim}
+&shortwave_config
+single_scattering_albedo_name = "ssa_sw",! Override default "single_scattering_albedo"
+incoming_flux_name = "incoming_sw",      ! Override default "incoming_flux"
+rayleigh_optical_depth_name = "r_od",    ! Override default "rayleigh_optical_depth"
+surf_albedo = 0.15,                      ! Surface albedo to use
+use_mu0_dimension = true,                ! Use mu0 dimension in output file
+cos_solar_zenith_angle(1:5) = 0.1,0.3,0.5,0.7,0.9,   ! Use these mu0 values
+do_write_spectral_boundary_fluxes = true,! Write also spectral TOA-up & surface-down
+do_write_direct_only = false,            ! Write only direct downward flux
+i_spectral_level_index = 10,11,12,       ! Write spectra only at these levels
+/
+\end{verbatim}
+The final option specifies what values are used for the cosine of the
+solar zenith angle, $\mu_0$, and the option before that specifies
+whether \code{mu0} is an additional dimension in the output file (by
+default it is not).
+
+\subsection{Merging gases}
+\label{sec:merge}
+This usage of \code{ckdmip\_lw} allows the optical depth of
+`hybrid' or `composite' gases to be created, by combining the
+following option with those in section \ref{sec:lbl}.
+%
+\begin{description}
+\citem{~~-m|--merge-only} Store the merged optical depth of the gas
+mixture in the output file, but do not perform any radiative transfer
+calculations.
+\end{description}
+%
+See the scripts \code{work/lw/test\_merge\_only.sh} and
+\code{test\_lw\_lbl\_merged.sh} in the CKDMIP software package.
+
+\subsection{Producing fluxes for CKD models}
+\label{sec:ckd}
+The \code{ckdmip\_lw} and \code{ckdmip\_sw} programs can also work on
+files produced by CKD models, by replacing all the options in section
+\ref{sec:lbl} related to reading in absorption spectra with a single
+option:
+%
+\begin{description}
+\citem{~~--ckd input.nc} Read the optical depth and other necessary
+variables in each g-point of a CKD model from the specified file.
+\end{description}
+%
+In addition to broadband fluxes, the output file will include the flux
+profiles for each of the g-points used by the CKD model.
+
+The idea is that the CKD model produces a description of its
+approximation of the optical properties of the atmosphere, but does
+not perform any radiative transfer.  By using \code{ckdmip\_lw} and
+\code{ckdmip\_sw} to do the radiative transfer, we ensure that the
+differences with line-by-line fluxes and heating rates (produced by
+the same programs in sections \ref{sec:lbl} and \ref{sec:lbl_sw}) are
+due only to the treatment of gas absorption. The format of the input
+file is described in section \ref{sec:requirements}.
+
+Once radiative transfer has been run on the output from a CKD model,
+the fluxes and heating rates may be compared to those of the
+line-by-line reference calculations (section \ref{sec:fluxes}).  The
+Matlab code in the \code{matlab} directory of the package illustrates
+how this may be done.
+
+\section{Requirements of participants}
+\label{sec:requirements}
+The purpose of CKDMIP is primarily to compare \emph{CKD tools,} which
+we define as a method (which may be fully automated or involve some
+hand-tuning) for generating individual CKD models, with some means to
+control the trade-off between accuracy and the number of g-points. An
+individual \emph{CKD model} is a software component for converting
+profiles of temperature, pressure and gas concentrations into optical
+depth profiles in $N$ g-points (i.e.\ to produce the input illustrated
+in section \ref{sec:ckd}), where $N$ is specific to a particular CKD
+model.
+
+Some CKDMIP participants will have a CKD tool that, with relative
+ease, can generate CKD models targeted at a particular application
+and adjust the trade-off between accuracy and efficiency. Section 4.2
+of \cite{Hogan+2020} describes the CKD models that would ideally be
+generated by such participants.  Other participants will have tools
+that are less flexible, perhaps involving hand-tuning, so would only
+be able to generate a small number of models.
+
+Either way, for each generated CKD model, the scenarios that it should
+be run on are given in section 4.2 of \cite{Hogan+2020}.  Thus for
+each model--scenario pair, the participant should submit a file
+containing the optical depth profiles in each g-point that can be used
+to compute fluxes as described in section \ref{sec:fluxes}.
+%
+These files should have names consisting of seven fields separated
+by underscores:
+%
+\begin{verbatim}
+TOOL_DATASET_BAND_APPLICATION_CONFIGURATION_optical-depth_SCENARIO.nc
+\end{verbatim}
+%
+where the fields are:
+\begin{description}
+\citem{~~TOOL} A string identifying the CKD tool and possibly its
+version number, e.g. \code{ecrad-rrtmg} for the ecRad implementation
+of the RRTMG gas optics scheme, or \code{ecckd-v0.1} for the ECMWF
+tool for generating CKD models (when it's available).
+\citem{~~DATASET} Either \code{evaluation1} or \code{evaluation2}
+depending on which set of 50 profiles are being processed.
+\citem{~~BAND} Either \code{lw} or \code{sw}.
+\citem{~~APPLICATION} The `application' from the three listed in Table
+1 of \cite{Hogan+2020}: \code{limited-area-nwp}, \code{global-nwp} or
+\code{climate}.
+\citem{~~CONFIGURATION} Participants are requested to generate several
+CKD models to explore the accuracy--efficiency trade-off: this string
+is used to distinguish between these different configurations, and
+would typically include the total number of g-points.  For example,
+RRTMG could use \code{narrow-140} since its bands fall into the
+`narrow bands' shown in Table 4 of \cite{Hogan+2020} and it uses a
+total of 140 g-points, while another scheme could use \code{wide-80}.
+\citem{~~SCENARIO} The gas-concentration scenario to which the CKD
+model has been applied \cite[see Table 2 and section 4.2
+  of][]{Hogan+2020}, using strings shown in the last field of the file
+name shown in section \ref{sec:fluxes}.
+\end{description}
+%
+The file must be in NetCDF format (either `classic' or HDF5).  Its
+format is best illustrated by showing the \code{ncdump} header output
+on conforming files produced by ecRad \cite[]{Hogan&2018}, which uses
+the RRTMG CKD model of \cite{Mlawer+1997} for its gas optics. In the
+case of the `Evaluation-1' dataset in present-day conditions we have
+the following in the longwave:
+%
+\begin{verbatim}
+netcdf ecrad-rrtmg_evaluation1_lw_climate_narrow-140_optical-depth_present {
+dimensions:
+    column = UNLIMITED ; // (50 currently)
+    level = 54 ;
+    gpoint_lw = 140 ;
+    half_level = 55 ;
+variables:
+    float pressure_hl(column, half_level) ;
+        pressure_hl:long_name = "Pressure on half-levels" ;
+        pressure_hl:units = "Pa" ;
+    float od_lw(column, level, gpoint_lw) ;
+        od_lw:long_name = "Clear-sky longwave optical depth" ;
+        od_lw:units = "1" ;
+    float planck_hl(column, half_level, gpoint_lw) ;
+        planck_hl:long_name = "Planck function on half-levels" ;
+        planck_hl:units = "W m-2" ;
+
+// global attributes:
+        :title = "Spectral radiative properties from the ecRad radiation model" ;
+        :source = "ecRad offline radiation model" ;
+...
+\end{verbatim}
+%
+The layers must start at the top-of-atmosphere, but otherwise the
+format is quite flexible.  The dimension names are not important;
+\code{ckdmip\_lw} only cares about the ordering of dimensions of the
+three variables. The column-like dimension is shown here as unlimited
+but this is not a requirement. In this example, the number of longwave
+g-points is 140, but this number will of course be different for other
+CKD models. The global attributes are not read.
+
+The three variables shown here provide the information needed to
+perform radiative transfer by \code{ckdmip\_lw} in section
+\ref{sec:fluxes}. They are the pressure and the Planck function at
+half levels (layer interfaces) and the optical depth at full levels
+(layers).  The Planck function for each g-point is the integral across
+all parts of the spectrum that contribute to that g-point.  It should
+be in units of W~m$^{-2}$, i.e.\ the energy emitted by a black body
+through a horizontal plane in a particular wavelength interval.  If
+Planck function is instead provided as the energy emitted by a black
+body per unit solid angle (i.e.\ W~m$^{-2}$~sr$^{-1}$) then use
+\code{input\_planck\_per\_sterad=true} in the namelist described in
+section \ref{sec:lbl}; this simply multiplies the input by a factor of
+$\pi$ before using it. The actual names of these three variables can
+be anything, since the namelist file
+% (see section \ref{sec:lbl})
+specifies the names of the variables to look for.
+
+The following is an example file for the shortwave
+%
+\begin{verbatim}
+netcdf ecrad-rrtmg_evaluation1_sw_climate_narrow-112_optical-depth_present {
+dimensions:
+    column = UNLIMITED ; // (50 currently)
+    level = 54 ;
+    half_level = 55 ;
+    gpoint_sw = 112 ;
+variables:
+    float pressure_hl(column, half_level) ;
+        pressure_hl:long_name = "Pressure on half-levels" ;
+        pressure_hl:units = "Pa" ;
+    float incoming_sw(column, gpoint_sw) ;
+        incoming_sw:long_name = "Incoming shortwave flux at top-of-atmosphere...
+        incoming_sw:units = "W m-2" ;
+    float od_sw(column, level, gpoint_sw) ;
+        od_sw:long_name = "Clear-sky shortwave optical depth" ;
+        od_sw:units = "1" ;
+    float ssa_sw(column, level, gpoint_sw) ;
+        ssa_sw:long_name = "Clear-sky shortwave single scattering albedo" ;
+        ssa_sw:units = "1" ;
+
+// global attributes:
+        :title = "Spectral radiative properties from the ecRad radiation model" ;
+        :source = "ecRad offline radiation model" ;
+\end{verbatim}
+%
+Rather than the Planck function being provided, the
+\code{incoming\_sw} variable provides the solar irradiance at
+top-of-atmosphere in each g-point.  These values ought to sum along
+the \code{gpoint\_sw} dimension to the nominal total solar radiance
+used in CKDMIP of 1361~W~m$^{-2}$.  Rayleigh scattering may be
+specified in two ways: in the example above, the optical depth
+includes both gas absorption and Rayleigh scattering, and the Rayleigh
+fraction is provided by the single scattering albedo
+variable. Alternatively, the Rayleigh optical depth may be provided as
+an additional variable whose name is given by the
+\code{rayleigh\_optical\_depth\_name} namelist variable, as shown in
+section \ref{sec:lbl_sw}. In this case, the main optical depth
+variable is taken to mean only the optical depth due to gas
+absorption.
+
+One additional file is required for each CKD model, describing what
+fraction of different parts of the spectrum contribute to each
+g-point. This will be used as part of the investigation of the effect
+of clouds described in section 4.4 of \cite{Hogan+2020}.  In the
+longwave this should be expressed in 326 spectral intervals at a
+resolution of 10~cm$^{-1}$ between 0 and 3260~cm$^{-1}$, and in the
+shortwave it should be provided in 995 spectral intervals at a
+resolution of 50~cm$^{-1}$ between 250 and 50,000~cm$^{-1}$. This is
+commensurate with the spectral scale at which the optical properties
+of clouds varies, and also ensures that each spectral interval lies
+entirely within one of the `narrow' spectral bands defined in Tables 4
+and 5 of \cite{Hogan+2020}. The file name should be of the form
+%
+\begin{verbatim}
+TOOL_BAND_APPLICATION_CONFIGURATION_spectral-definition.nc
+\end{verbatim}
+%
+and an example file for the ecRad implementation of RRTMG is available
+from the CKDMIP web site, with a \code{ncdump} header output of:
+%
+\begin{verbatim}
+netcdf ecrad-rrtmg_lw_climate_narrow-140_spectral-definition {
+dimensions:
+    gpoint_lw = 140 ;
+    wavenumber = 326 ;
+variables:
+    float wavenumber1(wavenumber) ;
+        wavenumber1:long_name = "Lower wavenumber bound of spectral interval" ;
+        wavenumber1:units = "cm-1" ;
+    float wavenumber2(wavenumber) ;
+        wavenumber2:long_name = "Upper wavenumber bound of spectral interval" ;
+        wavenumber2:units = "cm-1" ;
+    float gpoint_fraction(gpoint_lw, wavenumber) ;
+        gpoint_fraction:long_name = "Fraction of spectrum contributing to each g-point" ;
+
+\end{verbatim}
+%
+The variables \code{wavenumber1} and \code{wavenumber2} define the
+bounds of the high-resolution spectral intervals.  The variable
+\code{gpoint\_fraction} the defines what fraction of the spectrum at
+this high spectral resolution contributes to each g-point. This
+variable should sum to unity along the \code{wavenumber}
+dimension. Note that in the longwave, the fractions should \emph{not}
+be weighted by the Planck function at a particular temperature; since
+the spectral intervals are at high resolution, they can be weighted by
+the Planck function afterwards, using any temperature desired.
+Likewise, in the shortwave they should not be weighted by the solar
+spectrum.
+
+\begin{thebibliography}{00}
+\markright{References}
+%
+\harvarditem{Baum et~al.}{2014}{Baum+2014}Baum, B. A., P. Yang,
+A. J. Heymsfield, A. Bansemer, A. Merrelli, C. Schmitt, and C. Wang,
+2014: Ice cloud bulk single-scattering property models with the full
+phase matrix at wavelengths from 0.2 to 100
+$\mu$m. \textit{J. Quant.\ Spectrosc.\ Radiat.\ Transfer,}
+\textbf{146,} 123--139.
+%
+\harvarditem{Clough et~al.}{2005}{Clough+2005}Clough, S. A.,
+M. W. Shephard, E. J. Mlawer, J. S. Delamere, M. J. Iacono,
+K. Cady-Pereira, S. Boukabara and P. D. Brown, 2005: Atmospheric
+radiative transfer modeling: a summary of the AER
+codes. \textit{J. Quant.\ Spectrosc.\ Radiat.\ Transfer,} \textbf{91,}
+233--244.
+%
+\harvarditem{Coddington et~al.}{2016}{Coddington+2016}Coddington, O.,
+  J. L. Lean, P. Pilewskie, M. Snow and D. Lindholm, 2016: A solar
+  irradiance climate data
+  record. \textit{Bull.\ Am.\ Meteorol.\ Soc.,} \textit{97,}
+  1265--1282.
+%
+\harvarditem{Hogan and Bozzo}{2018}{Hogan&2018}Hogan, R. J., and Bozzo,
+  A., 2018: A flexible and efficient radiation scheme for the ECMWF
+  model. \textit{J. Adv. Modeling Earth Sys.,} \textbf{10,}
+  1990--2008.
+%
+\harvarditem{Hogan and Matricardi}{2020}{Hogan+2020}Hogan, R. J., and
+M. Matricardi, 2020: Evaluating and improving the treatment of gases
+in radiation schemes: the Correlated K-Distribution Model
+Intercomparison Project (CKDMIP). \textit{Geosci.\ Model Dev.,}
+\textbf{13,} 6501--6521.
+%
+\harvarditem{Mlawer et~al.}{1997}{Mlawer+1997} Mlawer, E. J.,
+S. J. Taubman, P. D. Brown, M. J. Iacono, and S. A. Clough, 1997:
+Radiative transfer for inhomogeneous atmospheres: RRTM, a validated
+correlated-k model for the longwave.  \textit{J. Geophys.\ Res.\ Atmos.,}
+\textbf{102,} 16\,663--16\,682.
+%
+\end{thebibliography}
+\end{document}
