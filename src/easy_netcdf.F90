@@ -2747,10 +2747,10 @@ contains
     end if
 
     ! Get variable ID from name
-    istatus = nf90_inq_varid(infile%ncid, var_name, ivarid_in) 
+    istatus = nf90_inq_varid(infile%ncid, trim(var_name), ivarid_in) 
     if (istatus /= NF90_NOERR) then
-      write(nulerr,'(a,i0,a)') '*** Error inquiring about NetCDF variable "', &
-           & var_name, '": ', trim(nf90_strerror(istatus))
+      write(nulerr,'(a,a,a)') '*** Error inquiring about NetCDF variable "', &
+           & trim(var_name), '": ', trim(nf90_strerror(istatus))
       call my_abort('Error reading NetCDF file')
     end if
 
