@@ -217,7 +217,7 @@ program change_continuum
         call calc_caviar_continuum(nlev, nspec, pressure_fl(:,jcol), temperature_fl(:,jcol), &
              &                     mole_fraction_fl(:,jcol), wavenumber_cm1, continuum)
       else
-        write(*,'(a,a)') '    Continuum model "', trim(subtract_name), '" not understood'
+        write(*,'(a,a,a)') '*** Error ***  Continuum model "', trim(subtract_name), '" not understood'
         error stop
       end if
 
@@ -237,7 +237,7 @@ program change_continuum
         call calc_caviar_continuum(nlev, nspec, pressure_fl(:,jcol), temperature_fl(:,jcol), &
              &                     mole_fraction_fl(:,jcol), wavenumber_cm1, continuum)
       else
-        write(*,'(a,a)') '    Continuum model "', trim(add_name), '" not understood'
+        write(*,'(a,a,a)') '*** Error ***  Continuum model "', trim(add_name), '" not understood'
         error stop
       end if
 
