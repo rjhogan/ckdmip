@@ -81,7 +81,7 @@ export FCFLAGS = $(WARNFLAGS) $(BASICFLAGS) $(CPPFLAGS) \
 export LIBS = $(LDFLAGS) $(NETCDF_LIB) $(OMPFLAG)
 
 BASESOURCES = easy_netcdf.F90 radiation_io.F90 yomlun_ifsaux.F90 \
-	parkind1.F90 abor1.F90
+	parkind1.F90 abor1.F90 interpolation.F90
 
 RADLW_SOURCES = \
 	ckdmip_lw.F90 longwave_config.F90 \
@@ -147,11 +147,12 @@ $(CONTINUUM): $(CONTINUUM_OBJECTS)
 %.o: %.F90
 	$(FC) $(FCFLAGS) -c $<
 
-ckdmip_tool.o: parkind1.o easy_netcdf.o
+interpolation.o: parkind1.o
+ckdmip_tool.o: parkind1.o easy_netcdf.o interpolation.o
 ckdmip_convert.o: parkind1.o easy_netcdf.o
 ckdmip_sw.o: shortwave_fluxes.o easy_netcdf.o shortwave_config.o ckdmip_version.h
 shortwave_fluxes.o: parkind1.o
-change_continuum.o: parkind1.o easy_netcdf.o caviar_continuum.o
+change_continuum.o: parkind1.o easy_netcdf.o caviar_continuum.o interpolation.o
 
 ckdmip_lw.o: longwave_config.o parkind1.o easy_netcdf.o planck_function.o \
 	longwave_fluxes.o ckdmip_version.h

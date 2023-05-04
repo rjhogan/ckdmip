@@ -15,7 +15,8 @@ program ckdmip_tool
 
   use parkind1,        only : jprb, jpib
   use easy_netcdf,     only : netcdf_file
-
+  use interpolation,   only : interpolate
+  
   implicit none
 
 #include "ckdmip_version.h"
@@ -634,48 +635,7 @@ contains
 
   end subroutine print_usage_and_exit
 
-  ! 1D linear interpolation: the original data "data_orig" at
-  ! wavenumber points "wn_orig" are interpolated to wavenumbers "wn"
-  ! and the result put in "data". Both wn and wn_orig should increase
-  ! monotonically.
-  subroutine interpolate(wn_orig, data_orig, wn, data)
-
-    implicit none    
-
-    real(jprb), intent(in),  dimension(:) :: wn_orig, data_orig, wn
-    real(jprb), intent(out), dimension(:) :: data
-
-    integer :: jwn, nwn, nwn_orig, iwn_orig, iwn
-
-    nwn = size(wn)
-    nwn_orig = size(wn_orig)
-
-    iwn_orig = 1
-    iwn = 1
-
-    ! Clamp values outside bounds of interpolation
-    do while (wn(iwn) <= wn_orig(1))
-      data(iwn) = data_orig(1)
-      iwn = iwn+1
-    end do
-
-    do while (wn(nwn) >= wn_orig(nwn_orig))
-      data(nwn) = data_orig(nwn_orig)
-      nwn = nwn-1
-    end do
-
-    ! Linear interpolation
-    do jwn = iwn,nwn
-      do while (wn_orig(iwn_orig+1) < wn(jwn))
-        iwn_orig = iwn_orig + 1
-      end do
-      data(jwn) = (data_orig(iwn_orig)*(wn_orig(iwn_orig+1)-wn(jwn)) &
-           &     + data_orig(iwn_orig+1)*(wn(jwn)-wn_orig(iwn_orig))) &
-           &     / (wn_orig(iwn_orig+1) - wn_orig(iwn_orig))
-    end do
-
-  end subroutine interpolate
-
+  
   !---------------------------------------------------------------------
   ! Perform in-place delta-Eddington scaling of the phase function
   elemental subroutine delta_eddington(od, ssa, g)

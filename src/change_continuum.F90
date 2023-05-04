@@ -27,7 +27,7 @@ program change_continuum
   character(len=4000) :: history_str
 
   ! Number and index of command-line arguments, and number of bands
-  integer :: narg, iarg, iarg_in, iarg_out, istatus, ncol, jcol, jlev, nspec, nlev
+  integer :: narg, iarg, iarg_in, iarg_out, istatus, ncol, jcol, jlev, nwav, nlev
 
   ! Layer optical depth of a single column, dimensioned (nwav,nlev)
   real(jprb), allocatable :: layer_od(:,:)
@@ -50,7 +50,10 @@ program change_continuum
 
   ! Convert optical depth to (1) mass extinction coefficient or (2)
   ! molar extinction coefficient
-  integer :: convert_type 
+  integer :: convert_type
+
+  ! Do we copy existing lines/continuum data or not?
+  logical :: no_copy = .false.
 
   ! Loop over arguments
   narg = command_argument_count()
@@ -61,6 +64,8 @@ program change_continuum
 
   iarg = 1
 
+  write(*,'(a)') '***** CHANGING WATER VAPOUR CONTINUUM *****'
+ 
   do while (iarg <= narg)
   
     call get_command_argument(iarg, argument_str)
@@ -72,6 +77,9 @@ program change_continuum
       iarg = iarg+1
       call get_command_argument(iarg, add_name)
       write(*,'(a,a,a)') 'Adding water-vapour continuum model "', trim(add_name), '"'
+    else if (trim(argument_str) == '--no-copy') then
+      write(*,'(a)') 'Not copying existing absorption spectrum'
+      no_copy = .true.
     else
       exit
     end if
@@ -79,36 +87,42 @@ program change_continuum
     
   end do
 
+  write(*,'(a)') '*******************************************'
+  
   iarg_in = iarg
   iarg_out = iarg+1
 
   call get_command_argument(iarg_in, in_file_name, status=istatus)
   if (istatus /= 0) then
-    error stop 'Error: failed to read name of input file as string of length < 512'
+    error stop '*** Error: failed to read name of input file as string of length < 512'
   end if
   
   call get_command_argument(iarg_out, out_file_name, status=istatus)
   if (istatus /= 0) then
-    error stop 'Error: failed to read name of output file as string of length < 512'
+    error stop '*** Error: failed to read name of output file as string of length < 512'
   end if
-  
+
+  ! Open input file
   call in_file%open(trim(in_file_name), iverbose=5)
 
   call in_file%get_global_attribute('constituent_id', constituent_id)
 
-  if (len_trim(subtract_name) > 0) then
+  if (no_copy) then
+    if (len_trim(subtract_name) > 0) then
+      error stop '*** Error: cannot subtract continuum if --no-copy specified as well'
+    end if
+    new_constituent_id = 'h2o-continuum'
+  else if (len_trim(subtract_name) > 0) then
     if (len_trim(add_name) > 0) then
       ! We are subtracting then adding a continuum
       if (trim(constituent_id) /= 'h2o') then
-        write(*,'(a)') 'constituent_id must be h2o when subtracting and adding a continuum'
-        error stop
+        error stop '*** Error: constituent_id must be h2o when subtracting and adding a continuum'
       end if
       new_constituent_id = 'h2o'
     else
       ! We are subtracting only
       if (trim(constituent_id) /= 'h2o') then
-        write(*,'(a)') 'constituent_id must be h2o when subtracting a continuum'
-        error stop
+        error stop '*** Error: constituent_id must be h2o when subtracting a continuum'
       end if
       new_constituent_id = 'h2o-no-continuum'
     end if
@@ -116,8 +130,7 @@ program change_continuum
     if (len_trim(add_name) > 0) then
       ! We are adding a continuum only
       if (trim(constituent_id) /= 'h2o-no-continuum') then
-        write(*,'(a)') 'constituent_id must be h2o-no-continuum when adding a continuum'
-        error stop
+        error stop '*** Error: constituent_id must be h2o-no-continuum when adding a continuum'
       end if
       new_constituent_id = 'h2o'
     else
@@ -163,10 +176,10 @@ program change_continuum
 
   ! Choose chunk sizes for compression, allowing for the limit on the
   ! chunk size being 2**32 (which is apparently less)
-  nspec = in_file%get_outer_dimension('wavenumber')
+  nwav = in_file%get_outer_dimension('wavenumber')
   nlev  = in_file%get_outer_dimension('level')
-  chunksizes = [nspec,nlev,1]
-  if (int(nspec,jpib)*int(nlev,jpib) >= int(2,jpib)**30) then
+  chunksizes = [nwav,nlev,1]
+  if (int(nwav,jpib)*int(nlev,jpib) >= int(2,jpib)**30) then
     chunksizes(2) = 1
   end if
 
@@ -195,7 +208,7 @@ program change_continuum
   ncol = in_file%get_outer_dimension('optical_depth')
 
   ! Set continuum initially to zero
-  allocate(continuum(nspec,nlev))
+  allocate(continuum(nwav,nlev))
   continuum = 0.0_jprb
 
   ! Water vapour in a layer (mol m-2)
@@ -207,17 +220,24 @@ program change_continuum
   ! Loop over atmospheric column in file
   do jcol = 1,ncol
     write(*,'(a,i0)') 'Column ', jcol
-    ! Load one column of optical depth
-    call in_file%get('optical_depth', layer_od, jcol)
+    if (.not. no_copy) then
+      ! Load one column of optical depth
+      call in_file%get('optical_depth', layer_od, jcol)
+    else
+      if (.not. allocated(layer_od)) then
+        allocate(layer_od(nwav, nlev))
+      end if
+      layer_od = 0.0_jprb
+    end if
 
     ! Compute continuum absorption to SUBTRACT
     if (len_trim(subtract_name) > 0) then
       write(*,'(a,a,a)') '  Subtracting continuum model "', trim(subtract_name), '"'
       if (trim(subtract_name) == 'CAVIAR') then
-        call calc_caviar_continuum(nlev, nspec, pressure_fl(:,jcol), temperature_fl(:,jcol), &
+        call calc_caviar_continuum(nlev, nwav, pressure_fl(:,jcol), temperature_fl(:,jcol), &
              &                     mole_fraction_fl(:,jcol), wavenumber_cm1, continuum)
       else
-        write(*,'(a,a,a)') '*** Error ***  Continuum model "', trim(subtract_name), '" not understood'
+        write(*,'(a,a,a)') '*** Error: Continuum model "', trim(subtract_name), '" not understood'
         error stop
       end if
 
@@ -234,10 +254,10 @@ program change_continuum
     if (len_trim(add_name) > 0) then
       write(*,'(a,a,a)') '  Adding continuum model "', trim(add_name), '"'
       if (trim(add_name) == 'CAVIAR') then
-        call calc_caviar_continuum(nlev, nspec, pressure_fl(:,jcol), temperature_fl(:,jcol), &
+        call calc_caviar_continuum(nlev, nwav, pressure_fl(:,jcol), temperature_fl(:,jcol), &
              &                     mole_fraction_fl(:,jcol), wavenumber_cm1, continuum)
       else
-        write(*,'(a,a,a)') '*** Error ***  Continuum model "', trim(add_name), '" not understood'
+        write(*,'(a,a,a)') '*** Error: Continuum model "', trim(add_name), '" not understood'
         error stop
       end if
 
@@ -261,9 +281,11 @@ contains
 
   subroutine print_usage_and_exit()
 
-    write(*,'(a)') 'Usage: change_continuum [--subtract <model>] [--add <model>] <input.h5> <output.h5>'
+    write(*,'(a)') 'Usage: change_continuum [--no-copy] [--subtract <model>] [--add <model>] <input.h5> <output.h5>'
     write(*,'(a)') '  Adds and/or subtracts a water-vapour continuum contribution to the single-gas layer input file,'
-    write(*,'(a)') '  storing in the output file.'
+    write(*,'(a)') '  storing in the output file. Continuum models:'
+    write(*,'(a)') '    CAVIAR'
+    write(*,'(a)') '    MT_CKD3.5 (not yet available)'
     stop
 
   end subroutine print_usage_and_exit
