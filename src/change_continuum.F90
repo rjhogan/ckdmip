@@ -11,6 +11,7 @@ program change_continuum
   use parkind1,         only : jprb, jpib
   use easy_netcdf,      only : netcdf_file
   use caviar_continuum, only : calc_caviar_continuum
+  use continuum_lut,    only : continuum_data
   
   implicit none
 
@@ -20,6 +21,8 @@ program change_continuum
   real(jprb), parameter :: MolarMassAir       = 28.970_jprb  ! g mol-1
 
   type(netcdf_file)  :: in_file, out_file
+  ! Continuum data for adding and subtracting
+  type(continuum_data) :: add_continuum, subtract_continuum
   character(len=512) :: in_file_name, out_file_name, argument_str
   character(len=512) :: constituent_id, profile_type, experiment, experiment_id
   character(len=512) :: new_constituent_id = ' '
@@ -55,6 +58,8 @@ program change_continuum
   ! Do we copy existing lines/continuum data or not?
   logical :: no_copy = .false.
 
+  integer :: strlen
+  
   ! Loop over arguments
   narg = command_argument_count()
 
@@ -73,10 +78,22 @@ program change_continuum
       iarg = iarg+1
       call get_command_argument(iarg, subtract_name)
       write(*,'(a,a,a)') 'Subtracting water-vapour continuum model "', trim(add_name), '"'
+      strlen = len_trim(subtract_name)
+      if (strlen >= 4) then
+        if (subtract_name(strlen-2:strlen) == '.nc') then
+          call subtract_continuum%read(trim(subtract_name))
+        end if
+      end if
     else if (trim(argument_str) == '--add') then
       iarg = iarg+1
       call get_command_argument(iarg, add_name)
       write(*,'(a,a,a)') 'Adding water-vapour continuum model "', trim(add_name), '"'
+      strlen = len_trim(add_name)
+      if (strlen >= 4) then
+        if (add_name(strlen-2:strlen) == '.nc') then
+          call add_continuum%read(trim(add_name))
+        end if
+      end if
     else if (trim(argument_str) == '--no-copy') then
       write(*,'(a)') 'Not copying existing absorption spectrum'
       no_copy = .true.
@@ -233,7 +250,10 @@ program change_continuum
     ! Compute continuum absorption to SUBTRACT
     if (len_trim(subtract_name) > 0) then
       write(*,'(a,a,a)') '  Subtracting continuum model "', trim(subtract_name), '"'
-      if (trim(subtract_name) == 'CAVIAR') then
+      if (subtract_continuum%is_available()) then
+        call subtract_continuum%calc(nlev, nwav, pressure_fl(:,jcol), temperature_fl(:,jcol), &
+             &                  mole_fraction_fl(:,jcol), wavenumber_cm1, continuum)
+      else if (trim(subtract_name) == 'CAVIAR') then
         call calc_caviar_continuum(nlev, nwav, pressure_fl(:,jcol), temperature_fl(:,jcol), &
              &                     mole_fraction_fl(:,jcol), wavenumber_cm1, continuum)
       else
@@ -253,7 +273,10 @@ program change_continuum
     ! Compute continuum absorption to ADD
     if (len_trim(add_name) > 0) then
       write(*,'(a,a,a)') '  Adding continuum model "', trim(add_name), '"'
-      if (trim(add_name) == 'CAVIAR') then
+      if (add_continuum%is_available()) then
+        call add_continuum%calc(nlev, nwav, pressure_fl(:,jcol), temperature_fl(:,jcol), &
+             &                  mole_fraction_fl(:,jcol), wavenumber_cm1, continuum)
+      else if (trim(add_name) == 'CAVIAR') then
         call calc_caviar_continuum(nlev, nwav, pressure_fl(:,jcol), temperature_fl(:,jcol), &
              &                     mole_fraction_fl(:,jcol), wavenumber_cm1, continuum)
       else

@@ -2,7 +2,7 @@
 
 module caviar_continuum
 
-public
+  public
   
 contains
   

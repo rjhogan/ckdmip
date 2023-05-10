@@ -98,7 +98,7 @@ CONVERT_SOURCES = ckdmip_convert.F90
 
 LBL2NC_SOURCES = lblrtm2nc.F90
 
-CONTINUUM_SOURCES = change_continuum.F90 caviar_continuum.F90
+CONTINUUM_SOURCES = change_continuum.F90 caviar_continuum.F90 continuum_lut.F90
 
 BASEOBJECTS := $(BASESOURCES:.F90=.o)
 
@@ -152,7 +152,8 @@ ckdmip_tool.o: parkind1.o easy_netcdf.o interpolation.o
 ckdmip_convert.o: parkind1.o easy_netcdf.o
 ckdmip_sw.o: shortwave_fluxes.o easy_netcdf.o shortwave_config.o ckdmip_version.h
 shortwave_fluxes.o: parkind1.o
-change_continuum.o: parkind1.o easy_netcdf.o caviar_continuum.o interpolation.o
+change_continuum.o: parkind1.o easy_netcdf.o caviar_continuum.o interpolation.o continuum_lut.o
+continuum_lut.o: parkind1.o interpolation.o
 
 ckdmip_lw.o: longwave_config.o parkind1.o easy_netcdf.o planck_function.o \
 	longwave_fluxes.o ckdmip_version.h
