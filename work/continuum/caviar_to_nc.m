@@ -45,7 +45,7 @@ if use_caviar_foreign
   for ii = index(1):index(end)
     index = find(abs(wn - wnx(ii)) < 5);
     if ~isempty(index)
-      foreign_absco(index(1)) = dataf2(ii,2);
+      foreign_absco(index(1)) = dataf2(ii,2).*(400./296);
       isnew(index(1)) = 2;
     end
   end
