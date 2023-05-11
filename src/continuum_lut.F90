@@ -109,10 +109,20 @@ contains
     ! Loop index for level
     integer :: jlev
 
+    if (self%use_radiation_term) then
+      write(*,'(a)') '    Applying "radiation term"'
+    else
+      write(*,'(a)') '    Not applying "radiation term"'
+    end if
+
+    ! If no radiation term is needed the multiplier is set to 1
     radiation_term = 1.0_jprb
     
     do jlev = 1,nlev
       if (self%use_radiation_term) then
+        ! File contains coefficients with units of cm2 molec-1 cm-1
+        ! (as the original MT-CKD standard) so we need to compute and
+        ! multiply the radiation term
         call calc_radiation_term(self%nwav, self%wavenumber, temperature(jlev), radiation_term)
       end if
       
