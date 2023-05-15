@@ -2824,8 +2824,8 @@ contains
 
     integer :: ivarid_in, ivarid_out
     integer :: ndims
-    integer :: ndimlens(NF90_MAX_VAR_DIMS)
-    integer(kind=jpib) :: ntotal
+    integer :: ndimlens(NF90_MAX_VAR_DIMS) 
+    integer(kind=jpib) :: ntotal, ntotal_out
     integer :: data_type
     integer :: istatus
 
@@ -2853,7 +2853,13 @@ contains
       call my_abort('Error reading NetCDF file')
     end if
 
-    call infile%get_variable_id(var_name, ivarid_out)
+    call this%get_variable_id(var_name, ivarid_out)
+    call this%get_array_dimensions(ivarid_out, ndims, ndimlens, ntotal_out)
+    if (ntotal /= ntotal_out) then
+      write(nulerr,'()') '*** Error: size mismatch between input and output variables'
+      call my_abort('Error writing NetCDF file')
+    end if
+    
     if (data_type == NF90_DOUBLE .or. data_type == NF90_FLOAT) then
       allocate(data_real(ntotal))
       !istatus = nf90_get_var(infile%ncid, ivarid_in, data_real(1))
