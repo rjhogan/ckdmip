@@ -1,5 +1,7 @@
 version 1.2
 	- Added change_continuum program and add_continuum.sh script
+	- Added ckdmip_crop_layers program to remove highest and/or lowest
+	  layers from spectral files (more memory efficient than ncks)
 
 version 1.1 (8 Sept 2022)
 	- Added do_write_spectral_boundary_fluxes to ckdmip_lw

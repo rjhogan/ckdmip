@@ -789,8 +789,6 @@ program ckdmip_lw
 
         call in_file(jfile)%get(trim(config%optical_depth_name), od_1gas, jcol)
 
-        write(*,*) '  raw optical depth range: ', minval(od_1gas), '-', maxval(od_1gas)
-
         if (size(od,2) /= nlev) then
           error stop 'Error: incorrect size for optical depth'
         end if

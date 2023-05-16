@@ -96,6 +96,8 @@ TOOL_SOURCES = ckdmip_tool.F90
 
 CONVERT_SOURCES = ckdmip_convert.F90
 
+CROP_SOURCES = ckdmip_crop_layers.F90
+
 LBL2NC_SOURCES = lblrtm2nc.F90
 
 CONTINUUM_SOURCES = change_continuum.F90 caviar_continuum.F90 continuum_lut.F90
@@ -107,20 +109,22 @@ RADSW_OBJECTS   := $(BASEOBJECTS) $(RADSW_SOURCES:.F90=.o)
 LBL2NC_OBJECTS  := $(BASEOBJECTS) $(LBL2NC_SOURCES:.F90=.o)
 TOOL_OBJECTS    := $(BASEOBJECTS) $(TOOL_SOURCES:.F90=.o)
 CONVERT_OBJECTS := $(BASEOBJECTS) $(CONVERT_SOURCES:.F90=.o)
+CROP_OBJECTS    := $(BASEOBJECTS) $(CROP_SOURCES:.F90=.o)
 CONTINUUM_OBJECTS:=$(BASEOBJECTS) $(CONTINUUM_SOURCES:.F90=.o)
 OBJECTS := $(BASEOBJECTS) $(RADLW_SOURCES:.F90=.o) \
 	$(RADSW_SOURCES:.F90=.o) $(LBL2NC_SOURCES:.F90=.o) \
 	$(TOOL_SOURCES:.F90=.o) $(CONVERT_SOURCES:.F90=.o) \
-	$(CONTINUUM_SOURCES:.F90=.o)
+	$(CONTINUUM_SOURCES:.F90=.o) $(CROP_SOURCES:.F90=.o)
 
-RADLW = ../bin/ckdmip_lw
-RADSW = ../bin/ckdmip_sw
-TOOL = ../bin/ckdmip_tool
-LBL2NC = ../bin/lblrtm2nc
+RADLW   = ../bin/ckdmip_lw
+RADSW   = ../bin/ckdmip_sw
+TOOL    = ../bin/ckdmip_tool
+LBL2NC  = ../bin/lblrtm2nc
 CONVERT = ../bin/ckdmip_convert
+CROP    = ../bin/ckdmip_crop_layers
 CONTINUUM = ../bin/change_continuum
 
-PROGRAMS = $(RADLW) $(RADSW) $(LBL2NC) $(TOOL) $(CONVERT) $(CONTINUUM)
+PROGRAMS = $(RADLW) $(RADSW) $(LBL2NC) $(TOOL) $(CONVERT) $(CONTINUUM) $(CROP)
 
 # --- BUILD TARGETS ---
 
@@ -138,6 +142,9 @@ $(TOOL): $(TOOL_OBJECTS)
 $(CONVERT): $(CONVERT_OBJECTS)
 	$(FC) $(FCFLAGS) $(CONVERT_OBJECTS) $(LIBS) -o $(CONVERT)
 
+$(CROP): $(CROP_OBJECTS)
+	$(FC) $(FCFLAGS) $(CROP_OBJECTS) $(LIBS) -o $(CROP)
+
 $(LBL2NC): $(LBL2NC_OBJECTS)
 	$(FC) $(FCFLAGS) $(LBL2NC_OBJECTS) -o $(LBL2NC) $(NETCDF_LIB) $(OMPFLAG)
 
@@ -150,6 +157,7 @@ $(CONTINUUM): $(CONTINUUM_OBJECTS)
 interpolation.o: parkind1.o
 ckdmip_tool.o: parkind1.o easy_netcdf.o interpolation.o
 ckdmip_convert.o: parkind1.o easy_netcdf.o
+ckdmip_crop_layers.o: parkind1.o easy_netcdf.o
 ckdmip_sw.o: shortwave_fluxes.o easy_netcdf.o shortwave_config.o ckdmip_version.h
 shortwave_fluxes.o: parkind1.o
 change_continuum.o: parkind1.o easy_netcdf.o caviar_continuum.o interpolation.o continuum_lut.o

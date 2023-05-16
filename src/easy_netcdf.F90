@@ -2061,8 +2061,12 @@ contains
 
     ! Define variable
 #ifdef NC_NETCDF4
-    istatus = nf90_def_var(this%ncid, var_name, data_type, idimids(1:ndims_local), &
-         & ivarid, deflate_level=deflate_level, shuffle=shuffle, chunksizes=chunksizes)
+    if (ndims_local == 0) then
+      istatus = nf90_def_var(this%ncid, var_name, data_type, varid=ivarid)
+    else
+      istatus = nf90_def_var(this%ncid, var_name, data_type, idimids(1:ndims_local), &
+           & ivarid, deflate_level=deflate_level, shuffle=shuffle, chunksizes=chunksizes(1:ndims_local))
+    end if
 #else
     istatus = nf90_def_var(this%ncid, var_name, data_type, idimids(1:ndims_local), ivarid)
 #endif
@@ -2788,10 +2792,14 @@ contains
 
     ! Create variable
 #ifdef NC_NETCDF4
-    istatus = nf90_def_var(this%ncid, var_name, data_type, idimids_out(1:ndims), &
-         & ivarid_out, deflate_level=deflate_level, shuffle=shuffle, chunksizes=chunksizes(1:ndims))
+    if (ndims == 0) then
+      istatus = nf90_def_var(this%ncid, trim(var_name), data_type, varid=ivarid_out)
+    else
+      istatus = nf90_def_var(this%ncid, var_name, data_type, idimids_out(1:ndims), &
+           & ivarid_out, deflate_level=deflate_level, shuffle=shuffle, chunksizes=chunksizes(1:ndims))
+    end if
 #else
-    istatus = nf90_def_var(this%ncid, var_name, data_type, idimids_out(1:ndims), ivarid_out)
+    istatus = nf90_def_var(this%ncid, var_name, data_type, dimids=idimids_out(1:ndims), varid=ivarid_out)
 #endif
     if (istatus /= NF90_NOERR) then
       write(nulerr,'(a,a,a,a)') '*** Error defining variable "', var_name, &
@@ -2856,7 +2864,7 @@ contains
     call this%get_variable_id(var_name, ivarid_out)
     call this%get_array_dimensions(ivarid_out, ndims, ndimlens, ntotal_out)
     if (ntotal /= ntotal_out) then
-      write(nulerr,'()') '*** Error: size mismatch between input and output variables'
+      write(nulerr,'(a)') '*** Error: size mismatch between input and output variables'
       call my_abort('Error writing NetCDF file')
     end if
     

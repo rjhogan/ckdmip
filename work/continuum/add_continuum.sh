@@ -26,13 +26,13 @@ DATASET=mmm
 PREFIX=""
 SUFFIXES="median minimum maximum"
 
-#DATASET=idealized
-#PREFIX="constant_"
-#SUFFIXES="a b c d e f g h i j k l"
+DATASET=idealized
+PREFIX="constant-"
+SUFFIXES="a b c d e f g h i j k l"
 
-#DATASET=evaluation1
-#prefix="present_"
-#SUFFIXES="1-10 11-20 21-30 31-40 41-50"
+DATASET=evaluation1
+PREFIX="present_"
+SUFFIXES="1-10 11-20 21-30 31-40 41-50"
 
 # Loop over domains (shortwave and longwave)
 for DOMAIN in $DOMAINS
