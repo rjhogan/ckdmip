@@ -18,47 +18,60 @@ DEST_BASE_DIR=/perm/${USER}/ecckd
 # Domains (shortwave and longwave) and continuum models to loop over
 DOMAINS="sw lw"
 CONTINUUM_MODELS="caviar"
+#CONTINUUM_MODELS="mt-ckd-4.1.1"
 
-# Dataset to process and associated prefix and suffixes to loop over,
-# which must be consistent with the file names of the dataset:
-# uncomment the group you wish to process.
-DATASET=mmm
-PREFIX=""
-SUFFIXES="median minimum maximum"
+# Datasets to process
+DATASETS="mmm idealized evaluation1"
 
-DATASET=idealized
-PREFIX="constant-"
-SUFFIXES="a b c d e f g h i j k l"
-
-DATASET=evaluation1
-PREFIX="present_"
-SUFFIXES="1-10 11-20 21-30 31-40 41-50"
-
-# Loop over domains (shortwave and longwave)
-for DOMAIN in $DOMAINS
+for DATASET in $DATASETS
 do
-    # Set source and destination directories
-    SOURCE_DIR=${SOURCE_BASE_DIR}/${DATASET}/${DOMAIN}_spectra
-    DEST_DIR=${DEST_BASE_DIR}/${DOMAIN}_spectra
 
-    mkdir -p $DEST_DIR
-    
-    # Loop over continuum models
-    for CONTINUUM_MODEL in $CONTINUUM_MODELS
+    # Prefix associated with dataset, and suffixes to loop over, which
+    # must be consistent with the file names of the dataset: uncomment
+    # the group you wish to process.
+    if [ "$DATASET" = mmm ]
+    then
+	PREFIX=""
+	SUFFIXES="median minimum maximum"
+    elif [ "$DATASET" = idealized ]
+    then
+	PREFIX="constant-"
+	SUFFIXES="a b c d e f g h i j k l"
+    elif [ "$DATASET" = evaluation1 ]
+    then
+	PREFIX="present_"
+	SUFFIXES="1-10 11-20 21-30 31-40 41-50"
+    else
+	echo DATASET $DATASET not understood
+	exit 1
+    fi
+
+    # Loop over domains (shortwave and longwave)
+    for DOMAIN in $DOMAINS
     do
-	# Set continuum file name
-	CONTINUUM_FILE=$CKDMIP_DATA_DIR/wv-continuum_${CONTINUUM_MODEL}.nc
+	# Set source and destination directories
+	SOURCE_DIR=${SOURCE_BASE_DIR}/${DATASET}/${DOMAIN}_spectra
+	DEST_DIR=${DEST_BASE_DIR}/${DOMAIN}_spectra
 	
-	# Loop over files for this dataset
-	for SUFFIX in $SUFFIXES
+	mkdir -p $DEST_DIR
+    
+	# Loop over continuum models
+	for CONTINUUM_MODEL in $CONTINUUM_MODELS
 	do
-	    # Set input and output file names
-	    INFILE=ckdmip_${DATASET}_${DOMAIN}_spectra_h2o-no-continuum_${PREFIX}${SUFFIX}.h5
-	    OUTFILE=ckdmip_${DATASET}_${DOMAIN}_spectra_h2o-${CONTINUUM_MODEL}_${PREFIX}${SUFFIX}.h5
-	    # Run change_continuum
-	    COMMAND_LINE="$CHANGE_CONTINUUM --add $CONTINUUM_FILE $SOURCE_DIR/$INFILE $DEST_DIR/$OUTFILE"
-	    echo $COMMAND_LINE
-	    $COMMAND_LINE
+	    # Set continuum file name
+	    CONTINUUM_FILE=$CKDMIP_DATA_DIR/wv-continuum_${CONTINUUM_MODEL}.nc
+	    
+	    # Loop over files for this dataset
+	    for SUFFIX in $SUFFIXES
+	    do
+		# Set input and output file names
+		INFILE=ckdmip_${DATASET}_${DOMAIN}_spectra_h2o-no-continuum_${PREFIX}${SUFFIX}.h5
+		OUTFILE=ckdmip_${DATASET}_${DOMAIN}_spectra_h2o-${CONTINUUM_MODEL}_${PREFIX}${SUFFIX}.h5
+		# Run change_continuum
+		COMMAND_LINE="$CHANGE_CONTINUUM --add $CONTINUUM_FILE $SOURCE_DIR/$INFILE $DEST_DIR/$OUTFILE"
+		echo $COMMAND_LINE
+		$COMMAND_LINE
+	    done
 	done
     done
 done
