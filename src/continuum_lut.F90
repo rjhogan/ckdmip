@@ -106,9 +106,12 @@ contains
 
     real(jprb) :: rho_ratio, scaling
     
-    ! Loop index for level
-    integer :: jlev
+    ! Loop index for level and wavenumber
+    integer :: jlev, jwav
 
+    ! Index to first element beyond range of look-up table
+    integer :: ibeyond
+    
     if (self%use_radiation_term) then
       write(*,'(a)') '    Applying "radiation term"'
     else
@@ -117,8 +120,20 @@ contains
 
     ! If no radiation term is needed the multiplier is set to 1
     radiation_term = 1.0_jprb
+
+    ! Find data beyond range of look-up table
+    !ibeyond = findloc(wavenumber_cm1 > self%wavenumber(self%nwav))
+    ! If findloc not available
+    ibeyond = 0
+    do jwav = 1,nwav
+      if (wavenumber_cm1(jwav) > self%wavenumber(self%nwav)) then
+        ibeyond = jwav
+        exit
+      end if
+    end do
     
     do jlev = 1,nlev
+      
       if (self%use_radiation_term) then
         ! File contains coefficients with units of cm2 molec-1 cm-1
         ! (as the original MT-CKD standard) so we need to compute and
@@ -143,6 +158,11 @@ contains
       
     end do
 
+    ! Set values beyond range of look-up table to zero
+    if (ibeyond > 0) then
+      continuum(ibeyond:,:) = 0.0
+    end if
+    
   end subroutine calc_continuum
 
   

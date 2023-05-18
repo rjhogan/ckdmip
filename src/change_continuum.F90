@@ -173,7 +173,11 @@ program change_continuum
   call out_file%copy_variable_definition(in_file, 'pressure_fl')
   call out_file%copy_variable_definition(in_file, 'temperature_fl')
   call out_file%copy_variable_definition(in_file, 'mole_fraction_fl')
-  !call out_file%copy_variable_definition(in_file, 'reference_surface_mole_fraction')
+  ! Note that the reference surface model fraction is present in
+  ! Idealized H2O files and is needed to create ecCKD look-up tables
+  if (in_file%exists('reference_surface_mole_fraction')) then
+    call out_file%copy_variable_definition(in_file, 'reference_surface_mole_fraction')
+  end if
   call out_file%copy_variable_definition(in_file, 'wavenumber')
 
   ! Put global attributes
@@ -213,7 +217,9 @@ program change_continuum
   call out_file%copy_variable(in_file, 'pressure_fl')
   call out_file%copy_variable(in_file, 'temperature_fl')
   call out_file%copy_variable(in_file, 'mole_fraction_fl')
-  !call out_file%copy_variable(in_file, 'reference_surface_mole_fraction')
+  if (in_file%exists('reference_surface_mole_fraction')) then
+    call out_file%copy_variable(in_file, 'reference_surface_mole_fraction')
+  end if
   call out_file%copy_variable(in_file, 'wavenumber')
 
   call in_file%get('temperature_fl', temperature_fl)
