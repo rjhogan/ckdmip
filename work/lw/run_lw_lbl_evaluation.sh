@@ -5,7 +5,14 @@ module load nco
 
 set -ex
 
-SET=evaluation2
+SET=evaluation1
+#SET=training1
+
+# The evaluation datasets have GHG profiles that vary with height in
+# the stratosphere so are denoted present-day, while the training
+# dataset(s) use constant GHG profiles
+BASEPROFTYPE=present
+#BASEPROFTYPE=constant
 
 unset OMP_NUM_THREADS
 BASEDIR=/perm/parr/ckdmip/$SET
@@ -56,15 +63,17 @@ then
     OUTPREFIX=${OUTPREFIX}-${NANGLE}angle
 fi
 
+# Main CKDMIP scenarios
 SCENARIOS="present preindustrial future glacialmax co2-180 co2-280 co2-560 co2-1120 co2-2240 ch4-350 ch4-700 ch4-1200 ch4-2600 ch4-3500 n2o-190 n2o-270 n2o-405 n2o-540 cfc11-0 cfc11-2000 cfc12-0 cfc12-550"
 
+# Also scenarios to examine spectral overlap of greenhouse gases
 SCENARIOS="$SCENARIOS co2-180-ch4-350 co2-180-ch4-3500 co2-2240-ch4-350 co2-2240-ch4-3500 co2-180-n2o-190 co2-180-n2o-540 co2-2240-n2o-190 co2-2240-n2o-540 ch4-350-n2o-190 ch4-350-n2o-540 ch4-3500-n2o-190 ch4-3500-n2o-540"
 
-SCENARIOS="co2-2240-n2o-540 ch4-350-n2o-190 ch4-350-n2o-540 ch4-3500-n2o-190 ch4-3500-n2o-540"
-
+# Present-day only
 #SCENARIOS=present
-#SCENARIOS="co2-0 ch4-0 n2o-0"
-#SCENARIOS="o2-0 n2-0"
+
+# Scenarios to test impact of turning a gas off completely
+#SCENARIOS="co2-0 ch4-0 n2o-0 o2-0 n2-0"
 
 mkdir -p $OUTDIR
 
@@ -181,12 +190,12 @@ do
 	COLS=${STARTCOL}-${ENDCOL}
 	
 	H2O_FILE=${INPREFIX}h2o_present_${COLS}.h5
-	CO2_FILE=${INPREFIX}co2_present_${COLS}.h5
+	CO2_FILE=${INPREFIX}co2_${BASEPROFTYPE}_${COLS}.h5
 	O3_FILE=${INPREFIX}o3_present_${COLS}.h5
-	CH4_FILE=${INPREFIX}ch4_present_${COLS}.h5
-	N2O_FILE=${INPREFIX}n2o_present_${COLS}.h5
-	CFC11_FILE=${INPREFIX}cfc11_present-equivalent_${COLS}.h5
-	CFC12_FILE=${INPREFIX}cfc12_present_${COLS}.h5
+	CH4_FILE=${INPREFIX}ch4_${BASEPROFTYPE}_${COLS}.h5
+	N2O_FILE=${INPREFIX}n2o_${BASEPROFTYPE}_${COLS}.h5
+	CFC11_FILE=${INPREFIX}cfc11_${BASEPROFTYPE}-equivalent_${COLS}.h5
+	CFC12_FILE=${INPREFIX}cfc12_${BASEPROFTYPE}_${COLS}.h5
 	N2_FILE=${INPREFIX}n2_constant_${COLS}.h5
 	O2_FILE=${INPREFIX}o2_constant_${COLS}.h5
 	
